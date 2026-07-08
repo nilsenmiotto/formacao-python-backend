@@ -1,58 +1,28 @@
-from flask import Flask, url_for, request
+import os
 
-app = Flask(__name__)
+from flask import Flask
 
-
-@app.route("/olamundo/<string:usuario>/<int:idade>/<float:altura>")
-def hello_world(usuario, idade, altura):
-    print("tipo da variável usuario: ", type(usuario))
-    print("tipo da variável idade: ", type(idade))
-    print("tipo da variável altura: ", type(altura))
-    return {
-        "usuario" : usuario,
-        "idade" : idade,
-        "altura" : altura
-    }
+import db
 
 
-@app.route("/bem-vindo")
-def bem_vindo():
-    return {
-        "message" : "Sejá bem vindo!"
-    }
+def create_app(test_config=None):
+    # create and configure the app
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_mapping(
+        SECRET_KEY="dev",
+        DATABASE=os.path.join(app.instance_path, "diobank.sqlite"),
+    )
 
-
-@app.route("/projects/")
-def projects():
-    return "The project page"
-
-
-@app.route("/about", methods=["GET", "POST"])
-def about():
-    if request.method == "GET":
-        return "GET The about page"
+    if test_config is None:
+        # load the instance config, if it exists, when not testing
+        app.config.from_pyfile("config.py", silent=True)
     else:
-        return "POST The about page"
+        # load the test config if passed in
+        app.config.from_mapping(test_config)
 
+    # ensure the instance folder exists
+    os.makedirs(app.instance_path, exist_ok=True)
 
-@app.route("/")
-def index():
-    return "index"
+    db.init_app(app)
 
-
-@app.route("/login")
-def login():
-    return "login"
-
-
-@app.route("/user/<username>")
-def profile(username):
-    return f"{username}'s profile"
-
-
-with app.test_request_context():
-    print(url_for("index"))
-    print(url_for("login"))
-    print(url_for("login", next="/"))
-    print(url_for("profile", username="John Doe"))
-    print(url_for("hello_world", usuario="Alice", idade=30, altura=1.65))
+    return app
