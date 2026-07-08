@@ -1,9 +1,12 @@
 import os
-
+from datetime import datetime
 import click
 from flask import Flask, current_app
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import func
+from sqlalchemy import Integer, String, DateTime, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -11,6 +14,27 @@ class Base(DeclarativeBase):
 
 
 db = SQLAlchemy(model_class=Base)
+
+
+class User(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"User(id={self.id!r}, username={self.username!r})"
+
+
+class Post(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(80), nullable=False)
+    body: Mapped[str] = mapped_column(String(300), nullable=False)
+    created: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    author_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
+
+    def __repr__(self):
+        return (
+            f"Post(id={self.id!r}, title={self.title!r}, author_id={self.author_id!r})"
+        )
 
 
 @click.command("init-db")
