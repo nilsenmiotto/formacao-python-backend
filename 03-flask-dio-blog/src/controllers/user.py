@@ -22,7 +22,6 @@ def _create_user():
     user = User(username=data["username"])
     db.session.add(user)
     db.session.commit()
-    # Logic to save the user to the database
     return {"message": "User created"}, HTTPStatus.CREATED
 
 
