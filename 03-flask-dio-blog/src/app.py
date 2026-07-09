@@ -67,6 +67,11 @@ def create_app(test_config=None):
     # register the database commands
     app.cli.add_command(init_db_command)
 
+    # register the blueprints
+    from controllers import user
+
+    app.register_blueprint(user.app)
+
     # initialize the app with the extension
     db.init_app(app)
 
