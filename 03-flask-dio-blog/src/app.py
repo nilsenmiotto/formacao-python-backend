@@ -6,8 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import func
 from sqlalchemy import Integer, String, Boolean, DateTime, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
 
 
 class Base(DeclarativeBase):
@@ -16,11 +17,24 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 migrate = Migrate()
+jwt = JWTManager()
+
+
+class Role(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    user: Mapped[list["User"]] = relationship(back_populates="role")
+
+    def __repr__(self):
+        return f"Role(id={self.id!r}, name={self.name!r})"
 
 
 class User(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(120), nullable=False)
+    role_id: Mapped[int] = mapped_column(Integer, ForeignKey("role.id"), nullable=True)
+    role: Mapped["Role"] = relationship(back_populates="user")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     def __repr__(self):
@@ -55,6 +69,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY="dev",
         SQLALCHEMY_DATABASE_URI="sqlite:///dio-blog.sqlite",
+        JWT_SECRET_KEY="Kfa8xiKMec707RNJGMzDWJIDxadurTTh1iiWP7tXUZA",
     )
 
     if test_config is None:
@@ -73,12 +88,15 @@ def create_app(test_config=None):
     # register the blueprints
     from controllers import user
     from controllers import post
+    from controllers import auth
 
     app.register_blueprint(user.app)
     app.register_blueprint(post.app)
+    app.register_blueprint(auth.app)
 
     # initialize the app with the extension
     db.init_app(app)
     migrate.init_app(app, db)
+    jwt.init_app(app)
 
     return app

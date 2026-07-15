@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import inspect
 
 from app import User, db
@@ -9,17 +10,30 @@ app = Blueprint("user", __name__, url_prefix="/users")
 
 
 def _format_user(user):
-    return {"id": user.id, "username": user.username}
+    return {
+        "id": user.id,
+        "username": user.username,
+        "role": {"id": user.role.id, "name": user.role.name},
+    }
 
 
 def _format_users(users):
-    return [{"id": user.id, "username": user.username} for user in users]
+    return [
+        {
+            "id": user.id,
+            "username": user.username,
+            "role": {"id": user.role.id, "name": user.role.name},
+        }
+        for user in users
+    ]
 
 
 def _create_user():
 
     data = request.get_json()
-    user = User(username=data["username"])
+    user = User(
+        username=data["username"], password=data["password"], role_id=data["role_id"]
+    )
     db.session.add(user)
     db.session.commit()
     return {"message": "User created"}, HTTPStatus.CREATED
@@ -32,7 +46,13 @@ def _list_users():
 
 
 @app.route("/", methods=["GET", "POST"])
-def handle_users():
+@jwt_required()
+def list_or_create_user():
+    user_id = get_jwt_identity()
+    user = db.get_or_404(User, user_id)
+
+    if user.role.name != "admin":
+        return {"message": "User not allowed"}, HTTPStatus.FORBIDDEN
     if request.method == "GET":
         return _list_users()
     elif request.method == "POST":
