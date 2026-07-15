@@ -1,10 +1,11 @@
 from http import HTTPStatus
 
 from flask import Blueprint, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from sqlalchemy import inspect
 
 from app import User, db
+from utils import required_role
 
 app = Blueprint("user", __name__, url_prefix="/users")
 
@@ -47,12 +48,8 @@ def _list_users():
 
 @app.route("/", methods=["GET", "POST"])
 @jwt_required()
+@required_role("admin")
 def list_or_create_user():
-    user_id = get_jwt_identity()
-    user = db.get_or_404(User, user_id)
-
-    if user.role.name != "admin":
-        return {"message": "User not allowed"}, HTTPStatus.FORBIDDEN
     if request.method == "GET":
         return _list_users()
     elif request.method == "POST":
@@ -60,12 +57,16 @@ def list_or_create_user():
 
 
 @app.route("/<int:id>", methods=["GET"])
+@jwt_required()
+@required_role("admin")
 def get_user(id):
     user = db.get_or_404(User, id)
     return _format_user(user)
 
 
 @app.route("/<int:id>", methods=["PATCH"])
+@jwt_required()
+@required_role("admin")
 def update_user(id):
     user = db.get_or_404(User, id)
     data = request.json
@@ -80,6 +81,8 @@ def update_user(id):
 
 
 @app.route("/<int:id>", methods=["DELETE"])
+@jwt_required()
+@required_role("admin")
 def delete_user(id):
     user = db.get_or_404(User, id)
     db.session.delete(user)

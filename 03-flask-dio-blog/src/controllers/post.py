@@ -2,6 +2,7 @@ from datetime import datetime
 from http import HTTPStatus
 
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required
 from sqlalchemy import inspect
 
 from app import Post, db
@@ -53,6 +54,7 @@ def _list_post():
 
 
 @app.route("/", methods=["GET", "POST"])
+@jwt_required()
 def handle_posts():
     if request.method == "GET":
         return _list_post()
@@ -61,12 +63,14 @@ def handle_posts():
 
 
 @app.route("/<int:id>", methods=["GET"])
+@jwt_required()
 def get_post(id):
     post = db.get_or_404(Post, id)
     return _format_post(post)
 
 
 @app.route("/<int:id>", methods=["PATCH"])
+@jwt_required()
 def update_post(id):
     post = db.get_or_404(Post, id)
     data = request.get_json()
@@ -88,6 +92,7 @@ def update_post(id):
 
 
 @app.route("/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_post(id):
     post = db.get_or_404(Post, id)
     db.session.delete(post)
