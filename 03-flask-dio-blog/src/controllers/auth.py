@@ -4,7 +4,7 @@ from flask import Blueprint, request
 from flask_jwt_extended import create_access_token
 from sqlalchemy import inspect
 
-from app import User, db
+from ..app import User, db
 
 app = Blueprint("auth", __name__, url_prefix="/auth")
 

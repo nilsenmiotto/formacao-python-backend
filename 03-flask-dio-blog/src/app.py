@@ -86,9 +86,9 @@ def create_app(test_config=None):
     app.cli.add_command(init_db_command)
 
     # register the blueprints
-    from controllers import user
-    from controllers import post
-    from controllers import auth
+    from .controllers import user
+    from .controllers import post
+    from .controllers import auth
 
     app.register_blueprint(user.app)
     app.register_blueprint(post.app)
