@@ -1,5 +1,31 @@
+from http import HTTPStatus
+
 import pytest
-from src.utils import eleva_quadrado
+
+from src.utils import required_role, eleva_quadrado
+
+
+@pytest.mark.parametrize(
+    "role_user, role_required, expected",
+    [
+        ("admin", "admin", "success"),
+        ("user", "admin", ({"message": "User not allowed"}, HTTPStatus.FORBIDDEN)),
+    ],
+)
+def test_required_role(mocker, role_user, role_required, expected):
+    # Given
+    mock_user = mocker.Mock()
+    mock_user.role.name = role_user
+
+    mocker.patch("src.utils.get_jwt_identity", return_value=1)
+    mocker.patch("src.utils.db.get_or_404", return_value=mock_user)
+    decorated_function = required_role(role_required)(lambda: expected)
+
+    # When
+    result = decorated_function()
+
+    # Then
+    assert result == expected
 
 
 @pytest.mark.parametrize("test_input,expected", [(2, 4), (3, 9), (10, 100)])
