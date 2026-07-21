@@ -6,6 +6,7 @@ from sqlalchemy import inspect
 
 from ..app import User, db
 from ..utils import required_role
+from ..messages import MESSAGE_USER_CREATED
 
 app = Blueprint("user", __name__, url_prefix="/users")
 
@@ -37,7 +38,7 @@ def _create_user():
     )
     db.session.add(user)
     db.session.commit()
-    return {"message": "User created"}, HTTPStatus.CREATED
+    return MESSAGE_USER_CREATED, HTTPStatus.CREATED
 
 
 def _list_users():

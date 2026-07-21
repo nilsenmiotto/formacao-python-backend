@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import inspect
 
 from ..app import Post, db
+from ..messages import MESSAGE_POST_CREATED
 
 app = Blueprint("post", __name__, url_prefix="/posts")
 
@@ -39,12 +40,12 @@ def _create_post():
     post = Post(
         title=data["title"],
         body=data["body"],
-        created=datetime.strptime(data["created"], "%Y-%m-%d %H:%M:%S"),
+        created=datetime.strptime(data["created"], "%Y-%m-%dT%H:%M:%S.%f"),
         author_id=data["author_id"],
     )
     db.session.add(post)
     db.session.commit()
-    return {"Message": "Post created"}, HTTPStatus.CREATED
+    return MESSAGE_POST_CREATED, HTTPStatus.CREATED
 
 
 def _list_post():
@@ -72,8 +73,9 @@ def get_post(id):
 @app.route("/<int:id>", methods=["PATCH"])
 @jwt_required()
 def update_post(id):
+    print(id)
     post = db.get_or_404(Post, id)
-    data = request.get_json()
+    data = request.json
 
     mapper = inspect(Post)
     for column in mapper.attrs:
@@ -82,7 +84,7 @@ def update_post(id):
                 setattr(
                     post,
                     column.key,
-                    datetime.strptime(data[column.key], "%Y-%m-%d %H:%M:%S"),
+                    datetime.strptime(data[column.key], "%Y-%m-%dT%H:%M:%S.%f"),
                 )
             else:
                 setattr(post, column.key, data[column.key])
