@@ -5,7 +5,8 @@ from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import inspect
 
-from ..app import Post, db
+from ..app import db
+from ..models import Post
 from ..messages import MESSAGE_POST_CREATED
 
 app = Blueprint("post", __name__, url_prefix="/posts")

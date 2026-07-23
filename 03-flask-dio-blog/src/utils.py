@@ -3,7 +3,8 @@ from functools import wraps
 
 from flask_jwt_extended import get_jwt_identity
 
-from .app import db, User
+from .app import db
+from .models.user import User
 
 
 def required_role(role_name):

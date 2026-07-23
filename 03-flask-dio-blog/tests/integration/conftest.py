@@ -2,7 +2,8 @@ from datetime import datetime
 
 import pytest
 
-from src.app import create_app, db, Role, User, Post
+from src.app import create_app, db
+from src.models import Role, User, Post
 
 
 @pytest.fixture()

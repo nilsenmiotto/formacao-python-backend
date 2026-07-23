@@ -4,9 +4,10 @@ from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import inspect
 
-from ..app import User, db
+from ..app import db
 from ..utils import required_role
 from ..messages import MESSAGE_USER_CREATED
+from ..models import User
 
 app = Blueprint("user", __name__, url_prefix="/users")
 
