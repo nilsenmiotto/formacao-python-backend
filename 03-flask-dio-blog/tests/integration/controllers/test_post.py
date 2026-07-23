@@ -39,7 +39,6 @@ def test_list_post(client, access_token, post_maria):
 
 def test_get_post_success(client, access_token, post_maria):
     # Given
-    post_maria.created = post_maria.created.isoformat()
 
     # When
     response = client.get(

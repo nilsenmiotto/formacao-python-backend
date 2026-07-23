@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from src.controllers.user import _format_user, _format_users
 from src.messages import MESSAGE_USER_CREATED
+from src.models import User, db
 
 
 def test_create_user(client, access_token):
@@ -67,9 +68,11 @@ def test_update_user_success(client, access_token, user_maria):
         headers={"Authorization": f"Bearer {access_token}"},
     )
 
+    user_alterado = db.get_or_404(User, user_maria.id)
+
     # Then
     assert response.status_code == HTTPStatus.OK
-    assert response.json == _format_user(user_maria)
+    assert response.json == _format_user(user_alterado)
 
 
 def test_update_user_fail(client, access_token):

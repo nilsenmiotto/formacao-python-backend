@@ -4,10 +4,14 @@ from flask import Blueprint, request
 from flask_jwt_extended import create_access_token
 from sqlalchemy import inspect
 
-from ..app import db
-from ..models import User
+from ..app import bcrypt
+from ..models import User, db
 
 app = Blueprint("auth", __name__, url_prefix="/auth")
+
+
+def _check_password(passworld_hash, password_raw):
+    return bcrypt.check_password_hash(passworld_hash, password_raw)
 
 
 # Create a route to authenticate your users and return JWTs. The
@@ -17,7 +21,7 @@ def login():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
     user = db.session.execute(db.select(User).where(User.username == username)).scalar()
-    if not user or password != user.password:
+    if not user or _check_password(user.password, password) == False:
         return {"message": "Bad username or password"}, HTTPStatus.UNAUTHORIZED
 
     access_token = create_access_token(identity=str(user.id))

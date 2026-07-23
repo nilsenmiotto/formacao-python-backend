@@ -4,7 +4,7 @@ from flask_jwt_extended import decode_token
 
 def test_auth_success(client, user_maria):
     # Given
-    json_login = {"username": user_maria.username, "password": user_maria.password}
+    json_login = {"username": user_maria.username, "password": "mudar123"}
 
     # When
     response = client.post("/auth/login", json=json_login)

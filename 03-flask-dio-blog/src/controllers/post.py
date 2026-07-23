@@ -17,7 +17,7 @@ def _format_post(post):
         "id": post.id,
         "title": post.title,
         "body": post.body,
-        "created": post.created,
+        "created": post.created.isoformat(),
         "author_id": post.author_id,
     }
 
@@ -28,7 +28,7 @@ def _format_posts(posts):
             "id": post.id,
             "title": post.title,
             "body": post.body,
-            "created": post.created,
+            "created": post.created.isoformat(),
             "author_id": post.author_id,
         }
         for post in posts
